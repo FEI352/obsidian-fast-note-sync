@@ -680,8 +680,12 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
       // Temporarily store hash in pending map, update hashManager only after server FileUploadAck
       plugin.pendingUploadHashes.set(data.path, contentHash)
       plugin.localStorageManager.savePending('pendingUploadHashes', plugin.pendingUploadHashes)
-      // 记录当前文件的 mtime/size 到缓存，以便后续利用
-      plugin.fileHashManager.setFileHash(data.path, contentHash, file.stat.mtime, file.stat.size)
+      // 记录当前文件的 mtime/size 到缓存，以便后续利用。
+      // 只写本地缓存，不写同步基准 (syncHashMap)：上传中断时若基准已写入，
+      // 下一轮对比会认为文件已同步，永不重传。基准由 receiveFileUploadAck 写入。
+      // Local cache only — syncHashMap is written by receiveFileUploadAck; writing it here
+      // makes an interrupted upload look synced forever.
+      plugin.fileHashManager.setFileHashes([[data.path, contentHash]], () => file.stat)
 
       // 使用外层计算好的 actualTotalChunks
 
