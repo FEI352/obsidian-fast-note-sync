@@ -785,9 +785,13 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
               type: 'send',
               action: 'FileUpload',
               path: data.path,
-              status: isLastChunk ? 'success' : 'pending',
-              progress: currentProgress
+              status: 'pending',
+              progress: currentProgress,
+              message: isLastChunk ? '已发完，等待服务器确认' : undefined
             });
+            // 最后一片发出不等于服务器入库：绿勾由 receiveFileUploadAck 标记
+            // Last chunk sent != stored on server; the green check is set in receiveFileUploadAck
+            if (isLastChunk) uploadLogIds.set(data.path, data.sessionId)
           }
         )
 
@@ -1648,7 +1652,14 @@ export const receiveFileRenameAck = function (data: { lastTime?: number }, plugi
 
 // 收到 FileUploadAck，将 pending hash 转移到正式 hashManager 并更新 lastFileSyncTime
 // Receive FileUploadAck, move pending hash to formal hashManager and update lastFileSyncTime
+const uploadLogIds = new Map<string, string>()
+
 export const receiveFileUploadAck = function (data: { lastTime?: number; path?: string; pathHash?: string }, plugin: FastSync) {
+  const logId = data.path ? uploadLogIds.get(data.path) : undefined
+  if (data.path && logId) {
+    uploadLogIds.delete(data.path)
+    SyncLogManager.getInstance().addOrUpdateLog({ id: logId, type: 'send', action: 'FileUpload', path: data.path, status: 'success', progress: 100, message: '' })
+  }
   // 服务端确认上传成功，将 pending hash 转移到正式 hashManager
   // Server confirmed upload success, move pending hash to formal hashManager
   if (data.path) {

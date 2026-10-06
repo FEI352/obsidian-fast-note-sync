@@ -364,7 +364,7 @@ export class WebSocketClient {
     void this.register();
   }
 
-  private async waitForBufferDrain(maxBufferSize = 5 * 1024 * 1024): Promise<void> {
+  private async waitForBufferDrain(maxBufferSize = 512 * 1024): Promise<void> {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
