@@ -379,6 +379,18 @@ export default class FastSync extends Plugin {
       DebugLogManager
     };
 
+    // 电脑熄屏/锁屏后 Chromium 把隐藏窗口的定时器压到约每分钟一次，附件分片上传几乎停住；关掉本窗口的后台降速
+    // Chromium throttles hidden-window timers to ~1/min after screen lock, stalling chunked uploads; disable it
+    if (Platform.isDesktopApp) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        (require("electron") as { remote?: { getCurrentWebContents(): { setBackgroundThrottling(v: boolean): void } } })
+          .remote?.getCurrentWebContents().setBackgroundThrottling(false)
+      } catch (e) {
+        dumpError("setBackgroundThrottling failed", e)
+      }
+    }
+
     // 注册自定义颜色图标 / Register custom colored icons
     resetFileOperations()
     const colors = {
