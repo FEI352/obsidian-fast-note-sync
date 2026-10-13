@@ -123,6 +123,12 @@ export class EventManager {
       // 回到前台重置退避计数器并重连（与 visibilitychange 合并去抖）
       // Reset backoff counter and reconnect on foreground (debounced with visibilitychange)
       this.scheduleResumeReconnect("focus")
+    } else if (!this.plugin.websocket?.isConnected()) {
+      // 电脑端关了后台降速后 visibilitychange 不再触发，改由窗口获得焦点时补一次重连
+      // 走同一个去抖通道，避免一次切前台触发两轮同步
+      // Desktop: with background throttling off, visibilitychange no longer fires; reconnect on focus
+      // through the same debounce channel so one foreground switch cannot start two sync rounds
+      this.scheduleResumeReconnect("focus-desktop")
     }
   }
 

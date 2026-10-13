@@ -5,12 +5,14 @@ const safeMoment = moment as unknown as (inp?: unknown) => { format(format: stri
 
 // WebSocket 连接常量
 const RECONNECT_BASE_DELAY = 1000; // 重连基础延迟 (毫秒)
+// 只有明确不该再连的原因才停止重连。
+// AuthorizationFaild 在服务端刚重启、数据库未就绪时也会发，broadcast failed 是服务端写失败（网络抖动），都可恢复，交给退避重试
+// Only stop for deliberate closes. AuthorizationFaild also fires while the server is starting up,
+// and "broadcast failed" is a transient write error; both are retried with backoff
 const NON_RECONNECT_REASONS = new Set([
-  "AuthorizationFaild",
   "ClientClose",
   "kicked by admin",
-  "TokenRotatedOrRevoked",
-  "broadcast failed"
+  "TokenRotatedOrRevoked"
 ]);
 
 export interface AppStoragePlugin {
