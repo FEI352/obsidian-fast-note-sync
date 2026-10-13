@@ -20,16 +20,21 @@ jobs:
         with:
           fetch-depth: 1
 
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: ".node-version"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Show build provenance
         run: |
