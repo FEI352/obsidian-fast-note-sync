@@ -1,0 +1,56 @@
+name: Build plugin artifact (no release)
+
+on:
+  push:
+    branches:
+      - ci/build-artifact
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".node-version"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Show build provenance
+        run: |
+          echo "commit: $(git rev-parse HEAD)"
+          echo "node: $(node -v)"
+          ls -la main.js manifest.json styles.css
+          md5sum main.js manifest.json styles.css
+
+      - name: Package plugin folder
+        run: |
+          mkdir -p out/fast-note-sync
+          cp main.js manifest.json styles.css out/fast-note-sync/
+          cd out && zip -r fast-note-sync-ci.zip fast-note-sync
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: fast-note-sync-ci
+          path: |
+            out/fast-note-sync-ci.zip
+            main.js
+            manifest.json
+            styles.css
+          retention-days: 14
