@@ -152,6 +152,36 @@ export class LocalStorageManager {
      * Must be called together when the user resets the sync cache,
      * so stale conflict paths don't ghost-resurrect after a fresh sync.
      */
+    /**
+     * 读取「上一轮已向服务端索要过、但依然缺失」的路径集合。
+     *
+     * 背景（2026-10-14 血证）：增量同步时，凡「哈希表里有、本地不存在」的路径都会被当成
+     * missing 向服务端索要一次。若服务端同样没有该路径，客户端不会记住这个结论 ——
+     * 于是每一轮同步都重复索要同一批路径，服务端全程 `Note does not exist`，
+     * 单库实测固定 7,631 条请求 / 轮（77 批）永不收敛，进度条长期卡死。
+     * 这里把「已索要过」的集合持久化，供下一轮判定「两边都没有」并剪掉哈希键（见 operator.ts）。
+     */
+    loadUnresolvedMissing(): Set<string> {
+        try {
+            const raw = this.read(this.getInternalKey("unresolvedMissingPaths"));
+            if (!raw) return new Set();
+            const arr = JSON.parse(raw) as unknown;
+            if (!Array.isArray(arr)) return new Set();
+            return new Set(arr.filter((x): x is string => typeof x === "string"));
+        } catch {
+            return new Set();
+        }
+    }
+
+    saveUnresolvedMissing(paths: Iterable<string>): void {
+        try {
+            const arr = Array.from(paths);
+            this.write(this.getInternalKey("unresolvedMissingPaths"), arr.length > 0 ? JSON.stringify(arr) : null);
+        } catch (e) {
+            dump("[LocalStorageManager] Failed to save unresolvedMissingPaths:", e);
+        }
+    }
+
     clearSyncTime(): void {
         this.setMetadata('lastNoteSyncTime', 0);
         this.setMetadata('lastFileSyncTime', 0);

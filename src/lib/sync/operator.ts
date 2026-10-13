@@ -947,6 +947,14 @@ export const handleSync = async function (plugin: FastSync, isLoadLastTime: bool
         }
       } else if (isLoadLastTime) {
         // 增量同步且未开启离线删除同步：检测缺失的文件（哈希表中有但本地不存在）
+        //
+        // 🔴 两轮判定（2026-10-14 修复）：某路径「哈希表里有、本地没有」时先向服务端索要一次。
+        // 若**下一轮它依然缺失**，说明服务端也没有它 —— 必须剪掉哈希键，否则该路径会被永久
+        // 当成 missing，每轮都重复索要，服务端全程 `Note does not exist`，形成永不收敛的同步风暴
+        // （实测单库固定 7,631 条请求/轮、77 批，进度条卡死且不自动恢复）。
+        const unresolvedPrev = plugin.localStorageManager.loadUnresolvedMissing();
+        const unresolvedNow = new Set<string>();
+        const unresolvable: string[] = [];
         const trackedPaths = plugin.fileHashManager.getAllPaths();
         const localPathsSet = new Set(list.map(f => f.path));
         let missingCount = 0;
@@ -954,6 +962,11 @@ export const handleSync = async function (plugin: FastSync, isLoadLastTime: bool
           if (++missingCount % 100 === 0) await yieldToMain();
           if (isPathExcluded(path, plugin)) continue;
           if (!localPathsSet.has(path)) {
+            if (unresolvedPrev.has(path)) {
+              unresolvable.push(path);
+              continue;
+            }
+            unresolvedNow.add(path);
             const item = { path: path, pathHash: hashContent(path) };
             if (path.endsWith(".md")) {
               missingNotes.push(item);
@@ -962,6 +975,11 @@ export const handleSync = async function (plugin: FastSync, isLoadLastTime: bool
             }
           }
         }
+        if (unresolvable.length > 0) {
+          plugin.fileHashManager.removeFileHashes(unresolvable);
+          dump(`[FastSync] Pruned ${unresolvable.length} unresolvable missing path(s) from hash map (absent both locally and on server).`);
+        }
+        plugin.localStorageManager.saveUnresolvedMissing(unresolvedNow);
 
         // 检测缺失的文件夹
         if (plugin.folderSnapshotManager && plugin.folderSnapshotManager.isReady()) {
