@@ -393,6 +393,22 @@ export class WebSocketClient {
       return;
     }
 
+    // ==== TEMP FORK DEBUG (cp437 path investigation — remove before upstream PR) ====
+    // 目的：把每条出站消息的 action + payload 原文落盘，用于确认 CP437 乱码究竟出现在
+    // 客户端（这里就会看到乱码）还是编码/网络层（这里干净、服务端却是乱码）。
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const _fs = require("fs") as typeof import("fs");
+      const _payload = typeof data === "string" ? data : JSON.stringify(data);
+      _fs.appendFileSync(
+        "/tmp/fns-debug.log",
+        `${new Date().toISOString()}\tOUT\t${action}\t${_payload}\n`
+      );
+    } catch {
+      /* 调试探针失败绝不影响主流程 */
+    }
+    // ==== END TEMP FORK DEBUG ====
+
     if (this.useProtobuf && this.options.serializeMessage) {
       try {
         let payloadObj: unknown = data;
