@@ -181,6 +181,27 @@ export class WebSocketManager {
         settleAllBatchSendSessionsOnClose();
       },
       onMessage: (client, action, data) => {
+        // ==== TEMP FORK DEBUG (inbound + progress snapshot — remove before any upstream use) ====
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const _fs = require("fs") as typeof import("fs");
+          const _s = typeof data === "string" ? data : JSON.stringify(data);
+          let _pct = "";
+          try {
+            const _t = this.plugin.progressTracker as unknown as {
+              getOverallPct?: () => number;
+              getDetailText?: () => string;
+            } | undefined;
+            if (_t && typeof _t.getOverallPct === "function") {
+              _pct = `pct=${_t.getOverallPct()} | ${_t.getDetailText ? _t.getDetailText() : ""}`;
+            }
+          } catch { /* ignore */ }
+          _fs.appendFileSync(
+            "/tmp/fns-debug.log",
+            `${new Date().toISOString()}\tIN\t${action}\t${(_s || "").slice(0, 400)}\t${_pct}\n`
+          );
+        } catch { /* 探针失败不影响主流程 */ }
+        // ==== END TEMP FORK DEBUG ====
         this.handleStructuredMessage(action, data);
       },
       serializeMessage: (action, payload) => {

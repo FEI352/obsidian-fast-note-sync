@@ -1685,6 +1685,20 @@ export const handleRequestSend = async function (plugin: FastSync, syncMode: Syn
   // 任一类失败不阻断其他类；失败类由 300s 总兜底（checkSyncCompletion）复位
   // A failure in any single type does not block the others; a failed type is reset by the 300s overall fallback (checkSyncCompletion)
   await Promise.allSettled(jobs);
+  // ==== TEMP FORK DEBUG (job end — remove before any upstream use) ====
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const _fs = require("fs") as typeof import("fs");
+    const _t = plugin.progressTracker as unknown as {
+      getOverallPct?: () => number;
+      getDetailText?: () => string;
+    } | undefined;
+    _fs.appendFileSync(
+      "/tmp/fns-debug.log",
+      `${new Date().toISOString()}\tJOBEND\tallSettled\tpct=${_t && _t.getOverallPct ? _t.getOverallPct() : "?"} | ${_t && _t.getDetailText ? _t.getDetailText() : ""}\n`
+    );
+  } catch { /* 探针失败不影响主流程 */ }
+  // ==== END TEMP FORK DEBUG ====
 
   if (plugin.settings.syncEnabled && shouldSyncNotes) {
     // 将已删除路径加入 pending set，等待 SyncEnd 确认服务端已处理后再从 hashManager 移除
