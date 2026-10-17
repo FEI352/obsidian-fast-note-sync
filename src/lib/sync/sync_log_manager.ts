@@ -1,4 +1,4 @@
-import { moment } from "obsidian";
+import { moment, normalizePath } from "obsidian";
 
 const safeMoment = moment as unknown as (inp?: unknown) => { format(format: string): string };
 
@@ -339,6 +339,13 @@ export class SyncLogManager {
         const logPath = msgData.data?.Path || msgData.Path || msgData.path || msgData.data?.path;
         // 提取 Vault 信息
         const logVault = msgData.Vault || msgData.vault || msgData.data?.Vault || msgData.data?.vault;
+
+        // 服务端推来的删除，本地本就没有该路径时是空操作（完整同步会重推所有历史删除），不记日志
+        // Server delete for a path absent locally is a no-op (full sync re-sends all old deletes); skip logging
+        if (["FileSyncDelete", "NoteSyncDelete", "FolderSyncDelete"].includes(action) && logPath && this.plugin
+            && !this.plugin.app.vault.getAbstractFileByPath(normalizePath(logPath))) {
+            return;
+        }
 
         // 根据消息类型调整 action 名称
         let logAction = action;
