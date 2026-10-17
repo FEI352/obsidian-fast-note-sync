@@ -391,6 +391,14 @@ export default class FastSync extends Plugin {
       }
     }
 
+    // 每 10 分钟补一次增量同步：断线打断的上传没有 Ack、不在 syncHashMap，重连后的同步不总能补传，这里兜底
+    // Incremental catch-up sync every 10 min: uploads cut by a disconnect never get an Ack and reconnect sync doesn't always resend them
+    // ponytail: 固定 10 分钟，不做成设置项，需要再加
+    this.registerInterval(window.setInterval(() => {
+      if (!this.settings.syncEnabled || this.settings.manualSyncEnabled || !this.websocket?.isAuth || this.isSyncing) return
+      void handleSync(this, this.localStorageManager.getMetadata("isInitSync") as boolean)
+    }, 10 * 60 * 1000))
+
     // 注册自定义颜色图标 / Register custom colored icons
     resetFileOperations()
     const colors = {
