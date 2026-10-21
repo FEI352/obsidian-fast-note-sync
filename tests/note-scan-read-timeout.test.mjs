@@ -12,7 +12,8 @@ function visit(node) {
 }
 visit(source);
 assert.ok(expression, 'exercise the actual note scan race expression');
-const code = ts.transpileModule(`(${expression})`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+// 保留真实异步上下文，让含 await 的旧实现按行为失败，而不是先发生语法错误。
+const code = ts.transpileModule(`(async () => (${expression}))()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 function run(read) {
   const timers = [];
   const promise = vm.runInNewContext(code, {
