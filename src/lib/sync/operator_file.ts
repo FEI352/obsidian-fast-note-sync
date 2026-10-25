@@ -60,7 +60,7 @@ let currentDownloadBufferBytes = 0
 const MAX_DOWNLOAD_BUFFER_BYTES = 20 * 1024 * 1024
 
 // 上传中的文件追踪，用于删除时取消上传
-const activeUploadsMap = new Map<string, { cancelled: boolean }>()
+const activeUploadsMap = new Map<string, { cancelled: boolean; sessionId?: string }>()
 
 // 全局中止信号，用于插件卸载时
 export let isPluginUnloading = false;
@@ -626,6 +626,15 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
     return
   }
 
+  // 同一会话已有循环在传（大文件 10 分钟内没传完，补同步/重连时服务端复用会话再发一次 FileUpload），不再叠加循环
+  // Same session already uploading (periodic/reconnect sync re-sends FileUpload for a reused session); don't stack another loop
+  const running = activeUploadsMap.get(data.path)
+  if (running && !running.cancelled && running.sessionId === data.sessionId) {
+    dump(`Upload already running for ${data.path} (${data.sessionId}), skip duplicate`)
+    plugin.recordSyncCompleted('file', data.pageIndex)
+    return
+  }
+
   // NeedPush(FileUpload) 驱动的上传-回执往返：FileUploadAck 本身不带 pageIndex，按 path 记下所属页
   // 供 Ack 到达时查表归账（见 sync_state.ts pendingFilePushPageIndex 注释）
   // NeedPush(FileUpload)-driven upload/ack round trip: FileUploadAck carries no pageIndex; record
@@ -647,8 +656,13 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
     const previousTimer = uploadAckTimers.get(data.path)
     if (previousTimer !== undefined) window.clearTimeout(previousTimer)
     uploadAckTimers.delete(data.path)
-    const uploadState = { cancelled: false };
-    activeUploadsMap.set(data.path, uploadState);
+    // 换了新会话：取消旧循环，每个循环只看自己的标记（mine），不再共用按路径查到的那一份
+    // New session supersedes the old loop; each loop only checks its own token (mine) instead of
+    // whatever the path currently maps to, so a newer loop can take over cleanly
+    const previous = activeUploadsMap.get(data.path)
+    if (previous) previous.cancelled = true
+    const mine: { cancelled: boolean; sessionId?: string } = { cancelled: false, sessionId: data.sessionId };
+    activeUploadsMap.set(data.path, mine);
     uploadContexts.set(data.path, plugin.syncState.activeSyncContext);
 
     // 断点续传 checkpoint key，提升到 try 外以便 catch 块中也能清除
@@ -752,7 +766,7 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
           BINARY_PREFIX_FILE_SYNC,
           () => {
             // before: 检查是否已被取消(例如由于文件在上传过程中被删除)
-            if (isPluginUnloading || uploadState.cancelled) {
+            if (isPluginUnloading || mine.cancelled) {
               dump(`Upload aborted for ${data.path} (cancelled before send)`);
               return true; // 返回 true 表示应该取消发送
             }
@@ -815,11 +829,13 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
         }
 
         // 如果被取消,立即退出循环并释放槽位
-        if (uploadState.cancelled) return; // Recovery/ACK already owns cleanup; do not release its replacement slot.
+        if (mine.cancelled) return; // Recovery/ACK already owns cleanup; do not release its replacement slot.
         if (sendResult === 'cancelled' || isPluginUnloading) {
           // 取消时清除 checkpoint，避免使用已失效的会话
-          // Clear checkpoint on cancel to avoid stale session reuse
-          try { plugin.app.saveLocalStorage(checkpointKey, null) } catch { /* ignore */ }
+          // Clear checkpoint on cancel to avoid stale session reuse (unless a newer loop owns it now)
+          if (activeUploadsMap.get(data.path) === mine) {
+            try { plugin.app.saveLocalStorage(checkpointKey, null) } catch { /* ignore */ }
+          }
           plugin.concurrencyLimiter.releaseSlot(data.path)
           plugin.recordSyncCompleted('file', data.pageIndex)
           return;
@@ -831,7 +847,7 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
 
       // 手动置空辅助 GC
       content = null;
-      if (!uploadState.cancelled && sessionIdToPathMap.has(data.sessionId)) armUploadAckTimeout(data.path, plugin);
+      if (!mine.cancelled && sessionIdToPathMap.has(data.sessionId)) armUploadAckTimeout(data.path, plugin);
 
       // 上传完成后，如果开启了附件云预览 - 上传后删除，则删除本地附件
       if (plugin.settings.cloudPreviewEnabled && plugin.settings.cloudPreviewAutoDeleteLocal) {
@@ -886,8 +902,9 @@ export const receiveFileUpload = async function (data: FileUploadMessage, plugin
       plugin.recordSyncCompleted('file', data.pageIndex)
     } finally {
       // 任务结束（完成或取消/失败），移除活跃标记
-      // Keep the session mapping until ACK/error, which arrives after the send loop.
-      if (activeUploadsMap.get(data.path) === uploadState) activeUploadsMap.delete(data.path);
+      // 只删自己的标记，别把接替的新循环的删掉；会话映射按 base 的约定保留到 ACK/error 到达
+      // Only remove our own entry (never a newer loop's); the session mapping stays until ACK/error
+      if (activeUploadsMap.get(data.path) === mine) activeUploadsMap.delete(data.path);
     }
   }
 
@@ -1715,5 +1732,14 @@ export const receiveFileDeleteAck = function (data: { lastTime?: number; path?: 
  */
 export const receiveFileUploadSessionNotFound = function (sessionId: string, plugin: FastSync) {
   const path = sessionIdToPathMap.get(sessionId)
-  if (path) recoverUpload(path, plugin)
+  if (!path) return
+  // 463 指向的是已过期的旧会话：若该路径已被更新的会话接管，不能把新循环一并拆掉
+  // A 463 refers to an expired session; if a newer session has taken over the path, leave it alone
+  const active = activeUploadsMap.get(path)
+  if (active && active.sessionId && active.sessionId !== sessionId) {
+    sessionIdToPathMap.delete(sessionId)
+    dump(`FileUploadSessionNotFound for superseded session ${sessionId}; keeping newer upload for ${path}`)
+    return
+  }
+  recoverUpload(path, plugin)
 }
