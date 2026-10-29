@@ -333,6 +333,7 @@ export default {
   "ui.log.summary.no_changes": "변경 없음",
 
   // --- ui.log.action ---
+  "ui.log.action.ConnectionClosed": "동기화 연결이 끊어졌습니다",
   "ui.log.action.VaultScanning_full": "노트 보관소 해시 계산 진행률(전체)",
   "ui.log.action.VaultScanning_incremental": "노트 보관소 해시 계산 진행률(증분)",
   "ui.log.action.VaultScanningSummary_full": "동기화 시작(전체) - 해시 계산",

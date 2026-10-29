@@ -333,6 +333,7 @@ export default {
   "ui.log.summary.no_changes": "変更なし",
 
   // --- ui.log.action ---
+  "ui.log.action.ConnectionClosed": "同期接続が切断されました",
   "ui.log.action.VaultScanning_full": "Vaultハッシュ計算進捗(全量)",
   "ui.log.action.VaultScanning_incremental": "Vaultハッシュ計算進捗(増分)",
   "ui.log.action.VaultScanningSummary_full": "同期開始（フル）- ハッシュ計算",
