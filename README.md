@@ -1,6 +1,6 @@
-[简体中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
+[简体中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
 
-If you have any questions, please create a new [issue](https://github.com/liu-zhengdong/obsidian-fast-note-sync/issues/new).
+If you have any questions, please create a new [issue](https://github.com/FEI352/obsidian-fast-note-sync/issues/new).
 
 This repository is forked from [haierkeys/obsidian-fast-note-sync](https://github.com/haierkeys/obsidian-fast-note-sync). The upstream is no longer maintained; the plugin itself is still installed from the upstream releases.
 
@@ -12,7 +12,7 @@ This repository is forked from [haierkeys/obsidian-fast-note-sync](https://githu
 
 <p align="center">
     <a href="https://github.com/haierkeys/obsidian-fast-note-sync/releases"><img src="https://img.shields.io/github/release/haierkeys/obsidian-fast-note-sync?style=flat-square" alt="release"></a>
-    <a href="https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/liu-zhengdong/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
+    <a href="https://github.com/FEI352/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/FEI352/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
     <img src="https://img.shields.io/badge/Language-TypeScript-00ADD8?style=flat-square" alt="TypeScript">
 </p>
 
@@ -25,7 +25,7 @@ This repository is forked from [haierkeys/obsidian-fast-note-sync](https://githu
 </p>
 
 <p align="center">
-  Requires a standalone server: <a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+  Requires a standalone server: <a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>
 </p>
 
 <div align="center">
@@ -89,11 +89,11 @@ We are continuously improving, and the following are future development plans:
 
 **Step 2: Authorize Sync**
 
-1. Access the Web interface of your deployed **[Fast Note Sync Service](https://github.com/liu-zhengdong/fast-note-sync-service)**.
+1. Access the Web interface of your deployed **[Fast Note Sync Service](https://github.com/haierkeys/fast-note-sync-service)**.
 2. Select **"Note Vaults"** from the left navigation bar.
 3. Click **"One-click Authorization for Obsidian"**. The system will automatically wake up Obsidian and complete the transfer of authorization information. Of course, you can also manually copy the authorization information into the plugin.
 
 ## 📦 Server Deployment
 
 For backend service settings, please refer to:
-- <a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+- <a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>

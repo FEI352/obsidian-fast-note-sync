@@ -1,6 +1,6 @@
-[简体中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
+[简体中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
 
-ご質問がある場合は、新しい [issue](https://github.com/liu-zhengdong/obsidian-fast-note-sync/issues/new) を作成してください。
+ご質問がある場合は、新しい [issue](https://github.com/FEI352/obsidian-fast-note-sync/issues/new) を作成してください。
 
 このリポジトリは [haierkeys/obsidian-fast-note-sync](https://github.com/haierkeys/obsidian-fast-note-sync) からフォークしたものです。上流はすでに更新を停止しており、プラグイン本体は引き続き上流のリリースからインストールします。
 
@@ -10,7 +10,7 @@
 
 <p align="center">
     <a href="https://github.com/haierkeys/obsidian-fast-note-sync/releases"><img src="https://img.shields.io/github/release/haierkeys/obsidian-fast-note-sync?style=flat-square" alt="release"></a>
-    <a href="https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/liu-zhengdong/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
+    <a href="https://github.com/FEI352/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/FEI352/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
     <img src="https://img.shields.io/badge/Language-TypeScript-00ADD8?style=flat-square" alt="TypeScript">
 </p>
 
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  独立したサーバーが必要です：<a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+  独立したサーバーが必要です：<a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>
 </p>
 
 <div align="center">
@@ -81,11 +81,11 @@
 
 **ステップ 2：同期の承認**
 
-1. 構築した **[Fast Note Sync Service](https://github.com/liu-zhengdong/fast-note-sync-service)** の Web インターフェースにアクセスします。
+1. 構築した **[Fast Note Sync Service](https://github.com/haierkeys/fast-note-sync-service)** の Web インターフェースにアクセスします。
 2. 左側のナビゲーションバーで **「ノート保管庫」** を選択します。
 3. **「Obsidian を一クリックで承認」** をクリックすると、システムが自動的に Obsidian を呼び出し、承認情報の転送を自动的に完了します。もちろん、手動で承認情報をプラグインにコピーすることも可能です。
 
 ## 📦 サーバー側のデプロイ
 
 バックエンドサービスの設定については、以下を参照してください：
-- <a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+- <a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>

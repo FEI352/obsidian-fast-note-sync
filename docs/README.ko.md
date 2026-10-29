@@ -1,6 +1,6 @@
-[简体中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
+[简体中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
 
-문제가 있는 경우 새로운 [issue](https://github.com/liu-zhengdong/obsidian-fast-note-sync/issues/new)를 생성하세요.
+문제가 있는 경우 새로운 [issue](https://github.com/FEI352/obsidian-fast-note-sync/issues/new)를 생성하세요.
 
 이 저장소는 [haierkeys/obsidian-fast-note-sync](https://github.com/haierkeys/obsidian-fast-note-sync)에서 포크되었습니다. 업스트림은 더 이상 업데이트되지 않으며, 플러그인 자체는 여전히 업스트림 릴리스에서 설치합니다.
 
@@ -10,7 +10,7 @@
 
 <p align="center">
     <a href="https://github.com/haierkeys/obsidian-fast-note-sync/releases"><img src="https://img.shields.io/github/release/haierkeys/obsidian-fast-note-sync?style=flat-square" alt="release"></a>
-    <a href="https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/liu-zhengdong/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
+    <a href="https://github.com/FEI352/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/FEI352/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
     <img src="https://img.shields.io/badge/Language-TypeScript-00ADD8?style=flat-square" alt="TypeScript">
 </p>
 
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  독립적인 서버가 필요합니다: <a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+  독립적인 서버가 필요합니다: <a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>
 </p>
 
 <div align="center">
@@ -81,11 +81,11 @@
 
 **두 번째 단계: 동기화 승인**
 
-1. 구축한 **[Fast Note Sync Service](https://github.com/liu-zhengdong/fast-note-sync-service)** 웹 인터페이스에 접속합니다.
+1. 구축한 **[Fast Note Sync Service](https://github.com/haierkeys/fast-note-sync-service)** 웹 인터페이스에 접속합니다.
 2. 왼쪽 내비게이션 바에서 **「노트 보관소」**를 선택합니다.
 3. **「Obsidian 원클릭 승인」**을 클릭하면 시스템이 자동으로 Obsidian을 호출하고 승인 정보 전달을 완료합니다. 물론 수동으로 승인 정보를 플러그인에 복사할 수도 있습니다.
 
 ## 📦 서버 배포
 
 백엔드 서버 설정은 다음을 참조하세요:
-- <a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+- <a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>

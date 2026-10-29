@@ -1,6 +1,6 @@
-[简体中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
+[简体中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-CN.md) / [English](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/README.md) / [日本語](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ja.md) / [한국어](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/FEI352/obsidian-fast-note-sync/blob/master/docs/README.zh-TW.md)
 
-有问题请新建 [issue](https://github.com/liu-zhengdong/obsidian-fast-note-sync/issues/new)。
+有问题请新建 [issue](https://github.com/FEI352/obsidian-fast-note-sync/issues/new)。
 
 本仓库 fork 自 [haierkeys/obsidian-fast-note-sync](https://github.com/haierkeys/obsidian-fast-note-sync)。上游已停止更新，插件本身仍安装上游发布的版本。
 
@@ -10,7 +10,7 @@
 
 <p align="center">
     <a href="https://github.com/haierkeys/obsidian-fast-note-sync/releases"><img src="https://img.shields.io/github/release/haierkeys/obsidian-fast-note-sync?style=flat-square" alt="release"></a>
-    <a href="https://github.com/liu-zhengdong/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/liu-zhengdong/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
+    <a href="https://github.com/FEI352/obsidian-fast-note-sync/blob/master/LICENSE"><img src="https://img.shields.io/github/license/FEI352/obsidian-fast-note-sync?style=flat-square" alt="license"></a>
     <img src="https://img.shields.io/badge/Language-TypeScript-00ADD8?style=flat-square" alt="TypeScript">
 </p>
 
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  需配合独立服务端使用：<a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+  需配合独立服务端使用：<a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>
 </p>
 
 <div align="center">
@@ -81,11 +81,11 @@
 
 **第二步：授权同步**
 
-1. 访问您搭建的 **[Fast Note Sync Service](https://github.com/liu-zhengdong/fast-note-sync-service)** Web 界面。
+1. 访问您搭建的 **[Fast Note Sync Service](https://github.com/haierkeys/fast-note-sync-service)** Web 界面。
 2. 在左侧导航栏中选择 **「笔记库」**。
 3. 点击 **「一键授权 Obsidian」**，系统会自动唤起 Obsidian 并自动完成传递授权信息，当然你也可以手动复制授权到插件内。
 
 ## 📦 服务端部署
 
 后端服务设置，请参考：
-- <a href="https://github.com/liu-zhengdong/fast-note-sync-service">Fast Note Sync Service</a>
+- <a href="https://github.com/haierkeys/fast-note-sync-service">Fast Note Sync Service</a>
