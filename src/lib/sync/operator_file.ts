@@ -252,6 +252,81 @@ export const sweepStalledDownloadSessions = async (plugin: FastSync, idleMs = DO
   return stalled.length
 }
 
+// ── 可选实现：Chekhov Ma 的 stalled-download reaper（本分支用它取代上面那个 sweep）───────────
+// 与 sweep 的差别：卡住的会话先重发一次 FileChunkDownload（有界重试），同一轮同步就能自愈，
+// 不必等下一轮把整个文件页重下；重试耗尽才判失败。9c89153 把它改成双层阈值 + 在途互斥 + dead 标记，
+// 避免 checkSyncCompletion 每 100ms 触发的并发重入把同一个会话反复“失败”。
+// Alternative implementation (Chekhov Ma, final form after 9c89153): two-tier stall thresholds,
+// an in-flight guard, and a dead flag so overlapping ticks cannot double-fail one session.
+const DOWNLOAD_STALL_MS = 30000
+const DOWNLOAD_PROGRESS_STALL_MS = 5 * 60 * 1000
+const DOWNLOAD_MAX_RETRIES = 2
+
+let reaperInFlight = false
+
+export const reapStalledDownloads = async function (plugin: FastSync) {
+  if (reaperInFlight || plugin.fileDownloadSessions.size === 0) return
+  reaperInFlight = true
+  try {
+    const now = Date.now()
+    for (const [key, session] of Array.from(plugin.fileDownloadSessions.entries())) {
+      if (session.dead) continue
+      const stalledMs = session.totalChunks === 0 ? DOWNLOAD_STALL_MS : DOWNLOAD_PROGRESS_STALL_MS
+      if (now - (session.lastActivityAt ?? 0) < stalledMs) continue
+      const retries = session.downloadRetries ?? 0
+      // 只有“一片都没收到”的会话才重发请求；已经收到部分分片的按失败处理（下一轮重下），
+      // 否则慢速链路上大文件会从第 0 片重来、把真实进度丢掉。
+      // Only re-request when nothing was downloaded yet; a partially received file is failed and
+      // picked up again next round instead of restarting from chunk 0.
+      if (retries < DOWNLOAD_MAX_RETRIES && session.totalChunks === 0 && session.pathHash) {
+        dumpError(`Download stalled for ${session.path} (retry ${retries + 1}/${DOWNLOAD_MAX_RETRIES}), re-requesting`)
+        releaseSessionMemory(session)
+        session.dead = true
+        // 临时会话 sessionId 为空：用它自己的 temp 目录名清理，绝不能以空 id 删掉整个 temp-chunks
+        // Temp sessions have an empty sessionId: clean up by their own temp dir, never the whole base
+        const cleanupId = session.sessionId || session.tempDir?.split("/").pop() || key
+        if (session.tempDir) await clearTempChunksDir(plugin, cleanupId).catch(() => { /* ignore */ })
+        plugin.fileDownloadSessions.delete(key)
+        const tempKey = `temp_${session.path}`
+        const slotKey = session.initialSlotKey || `download_${session.path}`
+        plugin.fileDownloadSessions.set(tempKey, {
+          commitGuard: session.commitGuard,
+          path: session.path,
+          contentHash: session.contentHash,
+          ctime: session.ctime,
+          mtime: session.mtime,
+          lastTime: session.lastTime,
+          sessionId: "",
+          totalChunks: 0,
+          size: session.size,
+          pageIndex: session.pageIndex,
+          initialSlotKey: slotKey,
+          lastActivityAt: Date.now(),
+          downloadRetries: retries + 1,
+          pathHash: session.pathHash,
+          ...createDownloadStorage(plugin, `init_${session.pathHash}`, session.size),
+        })
+        void plugin.websocket.SendMessage("FileChunkDownload", {
+          vault: plugin.settings.vault,
+          path: session.path,
+          pathHash: session.pathHash,
+        })
+      } else {
+        dumpError(`Download failed after retries, giving up (will retry next round): ${session.path}`)
+        // 先用真实 map key 移除再判失败：临时会话的 key 是 temp_<path> 且 sessionId 为空，
+        // 反过来做会留下僵尸，之后每个 tick 都再“失败”一次（日志刷屏 + 重复记账）。
+        // Remove by the actual map key BEFORE failing: temp sessions are keyed `temp_<path>` with an
+        // empty sessionId, so failing first leaves a zombie that every later tick fails again.
+        session.dead = true
+        plugin.fileDownloadSessions.delete(key)
+        await failFileDownloadSession(plugin, session, `Stalled: no progress for ${stalledMs}ms after ${retries} retries`)
+      }
+    }
+  } finally {
+    reaperInFlight = false
+  }
+}
+
 const storeMemoryChunk = (session: FileDownloadSession, chunkIndex: number, chunkData: ArrayBuffer) => {
   if (!session.chunks) session.chunks = new Map<number, ArrayBuffer>()
   const existingChunk = session.chunks.get(chunkIndex)
@@ -992,6 +1067,8 @@ export const receiveFileSyncUpdate = async function (data: ReceiveFileSyncUpdate
       pageIndex: data.pageIndex,
       initialSlotKey: slotKey,
       lastActivityAt: Date.now(),
+      downloadRetries: 0,
+      pathHash: data.pathHash,
       ...createDownloadStorage(plugin, `init_${data.pathHash}`, data.size),
     }
     plugin.fileDownloadSessions.set(tempKey, tempSession)
@@ -1187,6 +1264,8 @@ export const receiveFileSyncChunkDownload = async function (data: FileSyncChunkD
     pageIndex: tempSession.pageIndex,
     initialSlotKey: tempSession.initialSlotKey,
     lastActivityAt: Date.now(),
+    downloadRetries: tempSession.downloadRetries ?? 0,
+    pathHash: tempSession.pathHash,
     ...createDownloadStorage(plugin, data.sessionId, data.size),
   }
   plugin.fileDownloadSessions.set(data.sessionId, session)

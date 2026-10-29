@@ -114,6 +114,12 @@ export interface FileDownloadSession {
     initialSlotKey?: string;
     /** Last time a response or chunk arrived for this session; used by the stalled-download watchdog */
     lastActivityAt?: number;
+    /** Reaper: how many times this download has been re-requested after a stall (feature/stalled-download-reaper) */
+    downloadRetries?: number;
+    /** Reaper: server path hash, kept so a stalled session can be re-requested without recomputing it */
+    pathHash?: string;
+    /** Reaper: set once a session has been reaped, so an in-flight handler cannot resurrect it */
+    dead?: boolean;
 }
 
 export interface ReceiveMtimeMessage {
